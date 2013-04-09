@@ -1,9 +1,10 @@
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
+#include <time.h>
 
 double ETA = .00001;
-double  IT = 1000;
+int  IT = 1000;
 
 //Updates a weight w given a set of features x, labels y and a lambda for regularization
 //We could update w directly if we passed a pointer instead
@@ -22,16 +23,17 @@ double update_w(double w, double x[], int y[], double lamb, int num_samples)
 }
 
 
-void runSCD(int batch, double weights[], double* x, int y[], int lamb, int num_samples, int num_feats)
+void runSCD(int batch, double weights[], double* x, int y[], int lamb, int num_samples, int num_feats, int p_batch)
 {
   int i, j;
   for (i = 0; i < num_feats; i++)
     {
       weights[i] = 0;
     }
-
+  
   for (i = 0; i < IT; i++)
     {
+      # pragma omp parallel for if(p_batch)
       for (j = 0; j < batch; j++)
 	{
 	  int r = rand()%num_feats;	  
@@ -78,7 +80,12 @@ int main(void)
   
   // Test code - labels and testing
   int y[] = {-1, -1, -1, 1, 1, 1};
-  runSCD(1, w, x, y, lambdas[2], 6, 2); 
+
+  clock_t start = clock();
+  runSCD(1, w, x, y, lambdas[2], 6, 2, 1); 
+  clock_t end = clock();
+  double time_elapsed = (end - start) / CLOCKS_PER_SEC;
+  printf("Time elapsed for runSCD: %f\n", time_elapsed);
 
   for (i = 0; i < num_samples; i++)
     {
