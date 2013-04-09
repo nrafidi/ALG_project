@@ -1,8 +1,17 @@
-all: scd_sequential
+all: runexp
 
-scd_sequential: scd_sequential.c
-	gcc scd_sequential.c -o scd_sequential -fopenmp -lm
+runexp: runexp.o scd.o data_proc.o
+	gcc -o runexp.o scd.o data_proc.o -lm -fopenmp
+
+runexp.o: runexp.c scd.h data_proc.h
+	gcc -c runexp.c
+
+scd.o: scd.c scd.h
+	gcc -c scd.c 
+
+data_proc.o: data_proc.c data_proc.h
+	gcc -c data_proc.c
 
 clean:
-	rm scd_sequential
+	rm runexp *.o *~
 

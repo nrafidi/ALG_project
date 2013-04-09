@@ -1,7 +1,5 @@
 #include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
+#include "data_proc.h"
 
 int readX(double *x, char *fname)
 {
@@ -15,16 +13,9 @@ int readX(double *x, char *fname)
   i = 0;
   while (fscanf(fid, "%lf%*c", &n) > 0)
     {     
-      //testing fscanf
-      //printf("%f\n", n);
       x[i] = n;
       i++;
     } 
-  
-  /*  printf("Reprint x before returning:\n");
-  for (j = 0; j < i; j++)
-  printf("x at %d: %f\n", j, x[j]);*/
-
   return 0;
 }
 
@@ -46,6 +37,8 @@ int readY(int *y, char *fname)
   return 0;
 }
 
+
+/* MAIN for testing
 int main(void)
 {
   int j, k;
@@ -79,3 +72,4 @@ int main(void)
   free(x);
   free(y);
 }
+*/
