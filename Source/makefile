@@ -1,7 +1,7 @@
 all: runexp
 
 runexp: runexp.o scd.o data_proc.o
-	gcc -o runexp.o scd.o data_proc.o -lm -fopenmp
+	gcc -o runexp runexp.o scd.o data_proc.o -lm -fopenmp
 
 runexp.o: runexp.c scd.h data_proc.h
 	gcc -c runexp.c

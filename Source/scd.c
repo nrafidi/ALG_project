@@ -12,8 +12,15 @@ double update_w(double w, double x[], int y[], double lamb, int num_samples, int
     {
       double val = exp(y[s]*w*x[s]);
       sum += (y[s]*x[s]*val)/(1 + val);
+      // printf("x[%d] = %f\n",s,x[s]);
+      // printf("sum at %d = %f\n",s,sum);
     }
-
+  double w_new = w + eta*sum + eta*lamb*w;
+  double meow = eta*sum;
+  int check = meow != 0;
+  // printf("check = %d\n", check);
+  //  printf("meow = %.20lf\n", meow);
+  // printf("In update_w, about to return %f\n",w_new);
   return w + eta*sum + eta*lamb*w;
 }
 
@@ -35,6 +42,8 @@ void runSCD(int batch, double weights[], double* x, int y[], int lamb, int num_s
 	  weights[r] = update_w(weights[r], &x[r*num_samples], y, lamb, num_samples, p_w_samp, eta);
 	}
     }
+  // for (i = 0; i < num_feats; i++)
+    //printf("Weights in runscd: %lf\n", weights[i]);
   
 }
 
