@@ -9,13 +9,14 @@ int readX(double *x, char *fname)
   const char* mode = &read;
 
   FILE * fid = fopen(fname, mode);
-  
+  // perror("fopen");
   i = 0;
   while (fscanf(fid, "%lf%*c", &n) > 0)
     {     
       x[i] = n;
       i++;
     } 
+  fclose(fid);
   return 0;
 }
 
@@ -33,7 +34,7 @@ int readY(int *y, char *fname)
       y[i] = n;
       i++;
     } 
-
+  fclose(fid);
   return 0;
 }
 
