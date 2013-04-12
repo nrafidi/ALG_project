@@ -157,7 +157,7 @@ int main(void)
     }
   */
   double weights[num_feat];
-  int batch = 2;
+  int batch = 10000;
   int it = 100000;
   double eta = 0.00001;
   int p_batch = 1;
