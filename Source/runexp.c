@@ -146,7 +146,7 @@ int main(void)
   clock_t end;
   int i, j, k, guess, b, batch;
   double dot;
-  double times[4];
+  //double times[4];
   char *xFile = "/usr0/home/nrafidi/Data/arc_tr.csv";
   char *yFile = "/usr0/home/nrafidi/Data/arc_labels_tr.csv";
   
@@ -175,34 +175,42 @@ int main(void)
     }
   */
   double weights[num_feat];
-  int batch_max = 10000;
-  int it = 100000;
-  double eta = 0.00001;
+  int batch_max = num_feat;
+  int batch_step = 100;
+  int it = 1000000;
+  double eta = 0.000001;
+  int numexp = batch_max/batch_step;
 
-  for (b = 0; b <=batch_max; b +=1000)
+  double timel[numexp], lambs[numexp], times[numexp*4], errs[numexp*4];
+
+  # pragma omp parallel for
+  for (b = 0; b <=batch_max; b +=batch_step)
     {
+      int exp = b/batch_step;
       batch = b != 0 ? b : 1;
-      printf("%d, ", batch);
+      // printf("%d, ", batch);
       //printf("About to call choose_lambda\n");
       start = clock();
-      double lamb = choose_lambda (fold_size, x, y, num_samp, num_feat, batch, it, eta);
+      lambs[exp] = choose_lambda (fold_size, x, y, num_samp, num_feat, batch, it, eta);
       end = clock();
-      printf("%lf, ", ((double) (end - start))/CLOCKS_PER_SEC);
-      printf("%lf, ", lamb);
+      timel[exp] = ((double) (end - start))/CLOCKS_PER_SEC;
+      //      printf("%lf, ", ((double) (end - start))/CLOCKS_PER_SEC);
+      //      printf("%lf, ", lamb);
       //printf("Chosen lambda = %f\n",lamb); //if this prints -1 we're having problems
+      # pragma omp parallel for
       for (i = 0; i < 4; i++)
 	{
 	  int first = i-2 >= 0 ? 1: 0;
 	  int second = i%2;
 	  start = clock();
-	  runSCD(batch, weights, x, y, lamb, num_samp, num_feat, first, second, it, eta);
+	  runSCD(batch, weights, x, y, lambs[exp], num_samp, num_feat, first, second, it, eta);
 	  end = clock();
-	  times[i] = ((double)(end - start))/CLOCKS_PER_SEC;
-	  
+	  times[exp + i] = ((double)(end - start))/CLOCKS_PER_SEC;
+	  errs[exp + i] = test_w(weights, x, y, num_feat, num_samp);
 	  //Debugging code
 	  
-	  printf("%lf, ", times[i]);
-	  printf("%lf, ", test_w(weights, x, y, num_feat, num_samp));
+	  // printf("%lf, ", times[i]);
+	  //printf("%lf, ", test_w(weights, x, y, num_feat, num_samp));
 	  
 	  //      for (j = 0; j < num_feat; j++)
 	  //	printf("Weight %d: %lf\n", j, weights[j]);
@@ -216,8 +224,24 @@ int main(void)
 	    printf("Guess %d: %d\n", j, guess); 
 	    }*/
 	}
+      //printf("\n");
+    }
+  //print stuff
+
+  int e;
+  for (e = 0; e < numexp; e++)
+    {
+      printf("%lf, ", timel[e]);
+      printf("%lf, ", lambs[e]);
+      for (i = 0; i < 4; i++)
+	{
+	  printf("%lf, ", times[e + i]);
+	  printf("%lf, ", errs[e + i]);
+	}
       printf("\n");
     }
+
+
   // free stuff
   free(x);
   free(y);
