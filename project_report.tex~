@@ -30,7 +30,6 @@ w_f = w_f + \sum_{i = 1}^{N}(y_i - g(\vec{w}, x_i)) + \lambda w_f
 \begin{equation}
 g(\vec{w}, x_i) = \frac{-w^Tx_ie^{-w^Tx_i}}{1 + e^{-w^Tx_i}
 \end{equation}
-Algorithm 1 is the generic gradient descent (TODO:make algo fig). If the number of features is large, it can be very time consuming to update all features on each iteration of the algorithm, especially if it is likely that not all features are informative.  Thus, in stochastic gradient descent, a feature is randomly chosen and its weight updated on each iteration.
 \subsection{Parallelized Versions}
 \subsection{Experiments}
 \subsubsection{Data Sets}
