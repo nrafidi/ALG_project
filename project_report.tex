@@ -1,6 +1,6 @@
 \documentclass{article}
 \usepackage{geometry}
-\usepackage{fancyhdr}
+%\usepackage{fancyhdr}
 \usepackage{amsmath,amsthm,amssymb}
 \usepackage{graphicx}
 \usepackage{hyperref}
@@ -15,8 +15,19 @@
 
 \begin{document}
 \maketitle
+
 \section{Introduction}
+Gradient descent (also called coordinate descent) is a popular numerical technique for optimizing an expression that has no closed-form solution. This method can find a local minimum of a differentiable function by iteratively moving an initial guess of the minimum value in the opposite direction of the gradient at that point, either for a pre-specified number or iterations or until the update does not change the estimated value significantly. In the multivariate case, it is possible to update each coordinate individually in this manner. When data are numerous, stochastic gradient descent can improve efficiency by performing the update on a random subset of training examples at each step.
+
+In this project, we examine the performance improvement gained by parallelizing various sections of the stochastic gradient descent algorithm with OpenMP. We optimize the objective function for logistic regression with $L_2$ regularization:
+\begin{equation}
+\underset{w}{\min}-\frac{1}{1 + \exp(-y \cdot w^T x)} + \frac{\lambda}{2}||w||^2_2,
+\end{equation}
+where $x \in \mathbb{R}^d$ is a vector of sample features, $y \in \lbrace -1, 1 \rbrace$ is the sample label, and $w \in \mathbb{R}^d$ is a vector of feature weights. The first term in the optimization objective is the negative conditional likelihood of a sample's label given its features, $p(y|x)$; the second term is a regularization penalty on $w$ that encourages sparsity. Sparse solutions (those solutions with few nonzero weights in $w$) are particularly desirable when the number of features exceeds the number of samples.
+
 \section{Related Work}
+Several recent studies have also looked at parallelizing stochastic gradient descent. The Shotgun project parallelized $L_1$-regularized coordinate descent over features, proved near-linear speedup for their parallel algorithm, and empirically supported this theoretical result on several large datasets \cite{shotgun2011}. The Hogwild! project also theoretically proves near-linear speedup for parallelized stochastic gradient descent under sparsity, even when the updates are made non-atomically: a lock-free approach does not often result in memory overwrites when the data are sparse because few parallel computations try to modify the same variable concurrently \cite{hogwild2011}.
+
 \section{Algorithms and Optimizations}
 \subsection{Stochastic Gradient Descent}
 In this project we implemented stochastic gradient descent for $L_2$ penalized logistic regression. The objective function we seek to minimize is:
@@ -37,7 +48,7 @@ Algorithm 1 is the generic gradient descent (TODO:make algo fig). If the number 
 \section{Results}
 \section{Conclusions}
 
-%\bibliographystyle{ieeetr}
-%\bibliography{concats_ource}
+\bibliographystyle{ieeetr}
+\bibliography{refs}
 
 \end{document}
