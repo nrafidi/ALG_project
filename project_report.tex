@@ -17,38 +17,34 @@
 \maketitle
 
 \section{Introduction}
-Gradient descent (also called coordinate descent) is a popular numerical technique for optimizing an expression that has no closed-form solution. This method can find a local minimum of a differentiable function by iteratively moving an initial guess of the minimum value in the opposite direction of the gradient at that point, either for a pre-specified number or iterations or until the update does not change the estimated value significantly. In the multivariate case, it is possible to update each coordinate individually in this manner. When data are numerous, stochastic gradient descent can improve efficiency by performing the update on a random subset of training examples at each step. %Note: stochastic gradient descent can either use a subset of samples or a subset of features on an update iteration
+Gradient descent (also called coordinate descent) is a popular numerical technique for optimizing an expression that has no closed-form solution. This method can find a local minimum of a differentiable function by iteratively moving an initial guess of the minimum value in the opposite direction of the gradient at that point, either for a pre-specified number or iterations or until the update does not change the estimated value significantly. In the multivariate case, it is possible to update each coordinate individually in this manner. When data are numerous, stochastic gradient descent can improve efficiency by performing the update on a random subset of training examples at each step.
 
 In this project, we examine the performance improvement gained by parallelizing various sections of the stochastic gradient descent algorithm with OpenMP. We optimize the objective function for logistic regression with $L_2$ regularization:
 \begin{equation}
 \underset{w}{\min}-\frac{1}{1 + \exp(-y \cdot w^T x)} + \frac{\lambda}{2}||w||^2_2,
 \end{equation}
-where $x \in \mathbb{R}^d$ is a vector of sample features, $y \in \lbrace -1, 1 \rbrace$ is the sample label, and $w \in \mathbb{R}^d$ is a vector of feature weights. The first term in the optimization objective is the negative conditional likelihood of a sample's label given its features, $p(y|x)$; the second term is a regularization penalty on $w$ that encourages sparsity. %Note: that's not actually true. we should talk about this. L2 encourages all the weights to be small. L1 encourages sparsity by saying that most weights should be 0
- Sparse solutions (those solutions with few nonzero weights in $w$) are particularly desirable when the number of features exceeds the number of samples.
+where $x \in \mathbb{R}^d$ is a vector of sample features, $y \in \lbrace -1, 1 \rbrace$ is the sample label, and $w \in \mathbb{R}^d$ is a vector of feature weights. The first term in the optimization objective is the negative conditional likelihood of a sample's label given its features, $p(y|x)$; the second term is a regularization penalty on $w$ that encourages sparsity. Sparse solutions (those solutions with few nonzero weights in $w$) are particularly desirable when the number of features exceeds the number of samples.
 
 \section{Related Work}
 Several recent studies have also looked at parallelizing stochastic gradient descent. The Shotgun project parallelized $L_1$-regularized coordinate descent over features, proved near-linear speedup for their parallel algorithm, and empirically supported this theoretical result on several large datasets \cite{shotgun2011}. The Hogwild! project also theoretically proves near-linear speedup for parallelized stochastic gradient descent under sparsity, even when the updates are made non-atomically: a lock-free approach does not often result in memory overwrites when the data are sparse because few parallel computations try to modify the same variable concurrently \cite{hogwild2011}.
 
 \section{Algorithms and Optimizations}
-%Note: some of what I've written is a repeat of what you've written. We can talk about where we want to put stuff.
 \subsection{Stochastic Gradient Descent}
 In this project we implemented stochastic gradient descent for $L_2$ penalized logistic regression. The objective function we seek to minimize is:
 \begin{equation}
 \sum_{i = 1}^{N}(y_i - \hat{y}_i)^2 + \lambda||\vec{w}||_2^2
 \end{equation}
-Here $N$ is the number of samples, and we estimate $\hat{y} = sgn(w^Tx)$,%Note: this is what we're doing, and it seems inconsistent with the fact that we're doing logistic regression
-where $x$ is the feature matrix (\in \mathbb{R}^{NxF} and $\vec{w} \in \mathbb{R}^d$ are the learned weights ($F$ is the number of features). The labels $y$ are assumed to take on values of either $1$ or $-1$. To update the weights via gradient descent, we use a logistic update equation:
+Here $N$ is the number of samples, and we estimate $\hat{y} = sgn(w^Tx)$, where $x$ is the feature matrix (\in \mathbb{R}^{NxF} and $\vec{w} \in \mathbb{R}^d$ are the learned weights ($F$ is the number of features). The labels $y$ are assumed to take on values of either $1$ or $-1$. To update the weights via gradient descent, we use a logistic update equation:
 \begin{equation}
 w_f = w_f + \sum_{i = 1}^{N}(y_i - g(\vec{w}, x_i)) + \lambda w_f
 \end{equation}
 \begin{equation}
-g(\vec{w}, x_i) = \frac{-w^Tx_ie^{-w^Tx_i}}{1 + e^{-w^Tx_i}
+g(\vec{w}, x_i) = \frac{-w^Tx_ie^{-w^Tx_i}}{1 + e^{-w^Tx_i}}
 \end{equation}
-Algorithm 1 is the generic gradient descent (TODO:make algo fig). If the number of features is large, it can be very time consuming to update all features on each iteration of the algorithm, especially if it is likely that not all features are informative.  Thus, in stochastic gradient descent, a feature is randomly chosen and its weight updated on each iteration. This is shown in Algorithm 2 (TODO: make fig).
+Algorithm 1 is the generic gradient descent (TODO:make algo fig). If the number of features is large, it can be very time consuming to update all features on each iteration of the algorithm, especially if it is likely that not all features are informative.  Thus, in stochastic gradient descent, a feature is randomly chosen and its weight updated on each iteration. This is shown in Algorithm 2 (TODO: make fig). %batch o features, batch of samples
 \subsection{Parallelized Versions}
-There are several ways in which Algorithm 2 can be parallelized. In this project we explore two ways of parallelizing: batch updates, and a parallelization of those batch updates.  In each iteration, rather than updating the weight corresponding to one feature, which will require a large number of iterations to converge, we can update a subset of the weights (a batch).  If the probability that the same weight will appear more than once in a batch is low, then all the weights in the batch can be updated in parallel. The parallelized batch stochastic gradient descent is given in Algorithm 3 (TODO: make fig).
-%Note: if we use all samples to update a weight, then parallelizing that is kind of a mistake since the same value is being written to for each sample :(
-\subsection{Experiments}
+There are several ways in which Algorithm 2 can be parallelized. In this project we explore two ways of parallelizing: batch updates, and a parallelization of those batch updates.  In each iteration, rather than updating the weight corresponding to one feature, which will require a large number of iterations to converge, we can update a subset of the weights (a batch).  If the probability that the same weight will appear more than once in a batch is low, then all the weights in the batch can be updated in parallel. %The parallelized batch stochastic gradient descent is given in Algorithm 3 (TODO: make fig).
+\subsection{Experiments} %all combos of parallelization with varying batch sizes
 The major experiment was to see how the benefits gained by parallelizing in Algorithm 3 change as the batch size is increased.  For that, we ran Algorithm 2 (with batch updates) and Algorithm 3, for varying batch sizes and compared the performance on a validation set as well as the runtime. The number of iterations and the step size were fixed for both, and the regularization constant $\lambda$ was chosen with cross-validation of the training set.
 \subsubsection{Data Sets}
 We used ? data sets from among those used by \cite{shotgun2011}.  The filenames are listed in Appendix whatever.
