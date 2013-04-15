@@ -134,7 +134,6 @@ int main(void)
   readX(x, xFile);
   int *y = malloc(num_samp*sizeof(int));
   readY(y, yFile);
-
   // Print data after reading it in
   /*
     for (i = 0; i < num_samp; i++)
@@ -169,11 +168,13 @@ int main(void)
     {
       int exp =  b/batch_step;
       int batch = b != 0 ? b : 1;
+//      printf("Feature batch size batch = %d\n", batch);
 # pragma omp parallel for
       for (s_b = 0; s_b <= s_batch_max; s_b+=s_batch_step)
 	{
 	  int s_exp = exp + s_b/s_batch_step;
 	  int s_batch = s_b != 0 ? s_b : 1;
+//          printf("Sample batch size s_batch = %d\n", s_batch);
 	 
 	  //choose lambda
 	  start = clock();
@@ -181,7 +182,7 @@ int main(void)
 	  end = clock();
 	  timel[s_exp] = ((double) (end - start))/CLOCKS_PER_SEC;
 	  //printf("%lf, ", ((double) (end - start))/CLOCKS_PER_SEC);
-	  //printf("Chosen lambda = %f\n",lamb); //if this prints -1 we're having problems
+//	  printf("Chosen lambda = %f\n",lambs[exp]); //if this prints -1 we're having problems
 # pragma omp parallel for
 	  for (i = 0; i < 4; i++)
 	    {
