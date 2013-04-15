@@ -1,6 +1,17 @@
 #include <math.h>
 #include "scd.h"
 
+double compare_and_swap(double* reg, double oldval, double newval)
+{
+  //printf("In CAS: oldval is %lf\n",oldval);
+  
+  double old_reg_val = *reg;
+  if (old_reg_val == oldval)
+    *reg = newval;
+  return old_reg_val;
+}
+
+
 //Updates a weight w given a set of features x, labels y and a lambda for regularization
 double update_w(double w, double x[], int y[], double lamb, int num_samples, int p_samp, double eta)
 {
@@ -11,50 +22,65 @@ double update_w(double w, double x[], int y[], double lamb, int num_samples, int
   for(s = 0; s < num_samples; s++)
     {
       double val = exp(y[s]*w*x[s]);
-      sum += (y[s]*x[s]*val)/(1 + val);
-      // printf("x[%d] = %f\n",s,x[s]);
-      // printf("sum at %d = %f\n",s,sum);
+      double oldsum = sum;
+      // printf("About to compare_and_swap\n");
+      //printf("oldsum is %lf\n",oldsum);
+      if (isnan(sum))
+	break;
+      while (compare_and_swap(&sum, oldsum, sum + (y[s]*x[s]*val)/(1 + val)) != oldsum) {}
+      //  printf("Swap over\n");
     }
-  double w_new = w + eta*sum + eta*lamb*w;
-  double meow = eta*sum;
-  int check = meow != 0;
-  // printf("check = %d\n", check);
-  //  printf("meow = %.20lf\n", meow);
-  // printf("In update_w, about to return %f\n",w_new);
   return w + eta*sum + eta*lamb*w;
 }
 
 
-void runSCD(int batch, double weights[], double* x, int y[], int lamb, int num_samples, int num_feats, int p_batch, int p_w_samp, int it, double eta)
+void runSCD(int batch, double weights[], double* x, int y[], int lamb, int num_samples, int num_feats, int s_batch, int p_batch, int p_w_samp, int it, double eta)
 {
-  int i, j;
+  int i, j, k;
   for (i = 0; i < num_feats; i++)
     {
       weights[i] = 0;
     }
-  
+  double* batchX = malloc(s_batch * num_feats * sizeof(double));
+  int* batchY = malloc(s_batch * sizeof(double));
   for (i = 0; i < it; i++)
     {
+      // Picking samples in s_batch
+      # pragma omp parallel for
+      for (j = 0; j < s_batch; j++)
+	{
+	  int r = rand() % num_samples;
+	  # pragma omp parallel for
+	  for (k = 0; k < num_feats; k++)
+	    {
+	      batchX[k*s_batch + j] = x[k*num_samples + r];
+	    }
+	  batchY[j] = y[r];
+	}
+      
+      //if (lamb >= 10000)
+	//printf("runSCD iteration %d\n", i);
       # pragma omp parallel for if(p_batch)
       for (j = 0; j < batch; j++)
 	{
 	  int r = rand()%num_feats;	  
-	  weights[r] = update_w(weights[r], &x[r*num_samples], y, lamb, num_samples, p_w_samp, eta);
+	  // printf("About to update_w\n");
+	  weights[r] = update_w(weights[r], &batchX[r*s_batch], batchY, lamb, s_batch, p_w_samp, eta);
 	}
-    }
-  // for (i = 0; i < num_feats; i++)
-    //printf("Weights in runscd: %lf\n", weights[i]);
-  
+    }  
+  //if (lamb >=10000)
+    // printf("Leaving runSCD\n");
+  free(batchX);
+  free(batchY);
 }
 
-
-/* MAIN for testing:
+/*
+// MAIN for testing:
 //For each combination of lambda and step size, runSCD for a fixed number of iterations
 //Choose the best lambda-eta pair, and then runSCD for 10x as many iterations
 //Test resulting weights on test data
 int main(void)
 {
-  double test = exp(3);
   double lambdas[] = {.001, .01, .1, 1, 10, 100, 1000};
 
   // Test Code - feature array
@@ -88,7 +114,7 @@ int main(void)
   int y[] = {-1, -1, -1, 1, 1, 1};
 
   clock_t start = clock();
-  runSCD(1, w, x, y, lambdas[2], 6, 2, 1, 1); 
+  runSCD(1, w, x, y, lambdas[2], 6, 2, 1, 1, 10, .01); 
   clock_t end = clock();
   double time_elapsed = (end - start) / CLOCKS_PER_SEC;
   printf("Time elapsed for runSCD: %f\n", time_elapsed);
