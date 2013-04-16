@@ -119,8 +119,6 @@ double choose_lambda (int fold_size, double* x, int* y, int num_samp, int num_fe
 int main(void)
 {
 
-  clock_t start;
-  clock_t end;
   int i, j, k;
 
   //Training Set
@@ -183,9 +181,9 @@ int main(void)
 //          printf("Sample batch size s_batch = %d\n", s_batch);
 	 
 	  //choose lambda
-	  start = clock();
+	  clock_t start = clock();
 	  lambs[s_exp] = choose_lambda (fold_size, x, y, num_samp, num_feat, batch, s_batch, it, eta);
-	  end = clock();
+	  clock_t end = clock();
 	  timel[s_exp] = ((double) (end - start))/CLOCKS_PER_SEC;
 	  //printf("%lf, ", ((double) (end - start))/CLOCKS_PER_SEC);
 //	  printf("Chosen lambda = %f\n",lambs[exp]); //if this prints -1 we're having problems
@@ -195,10 +193,10 @@ int main(void)
 	      int first = i-2 >= 0 ? 1: 0;
 	      int second = i%2;
 	      double weights[num_feat];
-	      start = clock();
+	      clock_t startt = clock();
 	      runSCD(batch, weights, x, y, lambs[exp], num_samp, num_feat, s_batch, first, second, it, eta);
-	      end = clock();
-	      times[exp + i] = ((double)(end - start))/CLOCKS_PER_SEC;
+	      clock_t endd = clock();
+	      times[exp + i] = ((double)(endd - startt))/CLOCKS_PER_SEC;
 	      errs[exp + i] = test_w(weights, testX, testY, num_feat, num_samp);	      
 	    }
 	}
