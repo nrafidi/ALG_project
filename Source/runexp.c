@@ -158,7 +158,7 @@ int main(void)
   int s_batch_step = 10;
   //Iterations, step size and fold size for cross-validation
   int it = 100;
-  double eta = 0.01;
+  double eta = 0.0001;
   int fold_size = 10;
   //Number of experiments
   int numexp = batch_max/batch_step + s_batch_max/s_batch_step;
@@ -195,6 +195,8 @@ int main(void)
 	      double weights[num_feat];
 	      clock_t startt = clock();
 	      runSCD(batch, weights, x, y, lambs[exp], num_samp, num_feat, s_batch, first, second, it, eta);
+	      if (check_nan(weights))
+		  printf("Weights are nan - discard trial %d,%d,%d,\n", batch, s_batch, i);
 	      clock_t endd = clock();
 	      times[exp + i] = ((double)(endd - startt))/CLOCKS_PER_SEC;
 	      errs[exp + i] = test_w(weights, testX, testY, num_feat, num_samp);	      
