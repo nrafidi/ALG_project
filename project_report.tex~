@@ -42,7 +42,7 @@ Several recent studies have also looked at parallelizing stochastic gradient des
 
 \section{Algorithms and Optimizations}
 \subsection{Stochastic Gradient Descent}
-In this project we implemented stochastic gradient descent for $L_2$ penalized logistic regression. The objective function we seek to minimize is.
+In this project we implemented stochastic gradient descent for $L_2$ penalized logistic regression. The mathematical basis of this algorithm was explained in the Inroduction. Here we give pseudo
 Algorithm 1 is the generic gradient descent (TODO:make algo fig). If the number of features is large, it can be very time consuming to update all features on each iteration of the algorithm, especially if it is likely that not all features are informative.  Thus, in stochastic gradient descent, a feature is randomly chosen and its weight updated on each iteration. This is shown in Algorithm 2 (TODO: make fig).
 \subsection{Parallelized Versions}
 There are several ways in which Algorithm 2 can be parallelized. In this project we explore two ways of parallelizing: batch updates, and a parallelization of those batch updates.  In each iteration, rather than updating the weight corresponding to one feature, which will require a large number of iterations to converge, we can update a subset of the weights (a batch).  If the probability that the same weight will appear more than once in a batch is low, then all the weights in the batch can be updated in parallel. The parallelized batch stochastic gradient descent is given in Algorithm 3 (TODO: make fig).
