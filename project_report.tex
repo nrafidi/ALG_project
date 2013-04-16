@@ -10,14 +10,14 @@
 \newcommand{\argmax}{\operatornamewithlimits{argmax}}
 
 \title{Parallelizing Stochastic Gradient Descent}
-\author{Kirstin Early, \qquad Nicole Rafidi}
+\author{Kirstin Early \qquad Nicole Rafidi}
 %\date{\today}
 
 \begin{document}
 \maketitle
 
 \section{Introduction}
-Gradient descent (also called coordinate descent) is a popular numerical technique for optimizing an expression that has no closed-form solution. This method can find a local minimum of a differentiable function by iteratively moving an initial guess of the minimum value in the opposite direction of the gradient at that point, either for a pre-specified number or iterations or until the update does not change the estimated value significantly. In the multivariate case, it is possible to update each coordinate individually in this manner. When data are numerous, stochastic gradient descent can improve efficiency by performing the update on a random subset of training examples at each step or on a subset of features. %Note: stochastic gradient descent can either use a subset of samples or a subset of features on an update iteration
+Gradient descent (also called coordinate descent) is a popular numerical technique for optimizing an expression that has no closed-form solution. This method can find a local minimum of a differentiable function by iteratively moving an initial guess of the minimum value in the opposite direction of the gradient at that point, either for a pre-specified number or iterations or until the update does not change the estimated value significantly. In the multivariate case, it is possible to update each coordinate individually in this manner. When data are numerous, stochastic gradient descent can improve efficiency by performing the update on a random subset of training examples or on a subset of features at each step.
 
 In this project, we examine the performance improvement gained by parallelizing various sections of the stochastic gradient descent algorithm with OpenMP. We optimize the objective function for logistic regression with $L_2$ regularization:
 \begin{equation}
@@ -38,7 +38,7 @@ Here, $\eta$ is a step size parameter that indicates how far to move the update 
 After learning the weight vector $w$, we can predict the label of a new vector $x$ by $\hat{y} = sgn(w^Tx)$. This prediction captures the relationship between $w$ and the conditional likelihood $p(y|x)$: when $p(y = 1|x) > \frac{1}{2}$, $w^Tx$ is positive, and vice versa.
 
 \section{Related Work}
-Several recent studies have also looked at parallelizing stochastic gradient descent. The Shotgun project parallelized $L_1$-regularized coordinate descent over features, proved near-linear speedup for their parallel algorithm, and empirically supported this theoretical result on several large datasets \cite{shotgun2011}. The Hogwild! project also theoretically proves near-linear speedup for parallelized stochastic gradient descent under sparsity, even when the updates are made non-atomically: a lock-free approach does not often result in memory overwrites when the data are sparse because few parallel computations try to modify the same variable concurrently \cite{hogwild2011}. %Note: add more specifics on 
+Several recent studies have also looked at parallelizing stochastic gradient descent. The Shotgun project parallelized $L_1$-regularized coordinate descent over features, proved near-linear speedup for their parallel algorithm, and empirically supported this theoretical result on several large datasets \cite{shotgun2011}. The Hogwild! project also theoretically proves near-linear speedup for sample-parallelized stochastic gradient descent under sparsity, even when the updates are made non-atomically: a lock-free approach does not often result in memory overwrites when the data are sparse because few parallel computations try to modify the same variable concurrently \cite{hogwild2011}. However, Hogwild! does assume that each the additive update to a component of the weight vector is an atomic operation; our implementation respects this atomicity.
 
 \section{Algorithms and Optimizations}
 \subsection{Stochastic Gradient Descent}
@@ -50,7 +50,21 @@ There are several ways in which Algorithm 2 can be parallelized. In this project
 The major experiment was to see how the benefits gained by parallelizing in Algorithm 3 change as the batch size is increased.  For that, we ran Algorithm 2 (with batch updates) and Algorithm 3, for varying batch sizes and compared the performance on a validation set as well as the runtime. The number of iterations and the step size were fixed for both, and the regularization constant $\lambda$ was chosen with cross-validation of the training set.
 \subsubsection{Data Sets}
 We used ? data sets from among those used by \cite{shotgun2011}.  The filenames are listed in Appendix whatever.
+
 \section{Results}
+
+% Explanation of what figures are what....
+% {Runtime, Error} vs. {Feature Batch Size, Sample Batch Size}
+%	- Each plot for four levels of parallelization
+%	- (there are 16 plots here...might not include them all)
+% {Runtime, Error} vs. {Feature Batch Size, Sample Batch Size}
+%	- Each plot for both parallelizations: over features and samples
+%	- (there are four plots here)
+
+Figures~\cite{fig:NAME1} through \cite{fig:NAMEn} plot the runtimes and errors as the batch sizes (both features and samples) increase, for various levels of parallelization. As the batch sizes\textemdash both feature batch size and sample batch size\textemdash increase, there is the expected tradeoff between the convergence rate and runtime: when more features or samples are used to update the weights on each iteration, the algorithm converges more quickly, at the expense of more data processing and a longer runtime.
+
+Of course, the fastest runtime and convergence, for given feature and sample batch sizes, occur when both levels of parallelization are employed. However, Figure~\cite{fig:NAME} indicates that performance improves more significantly when batch updates over features are parallelized than when batch updates over samples are parallelized. This result is likely due to the size of this data set: there are 100 times as many features as samples, so parallelizing over the more computationally-intensive portion of the data set would result in a bigger performance improvement.
+
 \section{Conclusions}
 
 \bibliographystyle{ieeetr}
