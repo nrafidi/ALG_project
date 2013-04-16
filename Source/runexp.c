@@ -126,14 +126,20 @@ int main(void)
   //Training Set
   char *xFile = "/usr0/home/nrafidi/Data/arc_tr.csv";
   char *yFile = "/usr0/home/nrafidi/Data/arc_labels_tr.csv";
+  char *xTestFile = "/usr2/home/kearly/arc_ts.csv";
+  char *yTestFile = "/usr2/home/kearly/arc_labels_ts.csv";
 
   int num_samp = 100;
   int num_feat = 10000;
 
   double *x = malloc(num_samp*num_feat*sizeof(double));
+  double *testX = malloc(num_samp*num_feat*sizeof(double));
   readX(x, xFile);
+  readX(testX, xTestFile);
   int *y = malloc(num_samp*sizeof(int));
   readY(y, yFile);
+  int *testY = malloc(num_samp*sizeof(int));
+  readY(testY, yTestFile);
   // Print data after reading it in
   /*
     for (i = 0; i < num_samp; i++)
@@ -153,7 +159,7 @@ int main(void)
   int s_batch_max = num_samp;
   int s_batch_step = 10;
   //Iterations, step size and fold size for cross-validation
-  int it = 10;
+  int it = 100;
   double eta = 0.01;
   int fold_size = 10;
   //Number of experiments
@@ -193,7 +199,7 @@ int main(void)
 	      runSCD(batch, weights, x, y, lambs[exp], num_samp, num_feat, s_batch, first, second, it, eta);
 	      end = clock();
 	      times[exp + i] = ((double)(end - start))/CLOCKS_PER_SEC;
-	      errs[exp + i] = test_w(weights, x, y, num_feat, num_samp);	      
+	      errs[exp + i] = test_w(weights, testX, testY, num_feat, num_samp);	      
 	    }
 	}
     }
@@ -227,5 +233,7 @@ int main(void)
   // free stuff
   free(x);
   free(y);
+  free(testX);
+  free(testY);
   return 0;
 }
