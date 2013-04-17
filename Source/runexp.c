@@ -156,7 +156,7 @@ int main(void)
   int batch_min = 5000; // set to 0
   int batch_step = 1000;
   //Sample batch values
-  int s_batch_max = num_samp;
+  int s_batch_max = 90;
   int s_batch_min = 70; // set to 0
   int s_batch_step = 10;
   //Iterations, step size and fold size for cross-validation
@@ -201,11 +201,11 @@ int main(void)
 	      if (check_nan(weights))
 		  printf("Weights are nan - discard trial %d,%d,%d,\n", batch, s_batch, i);
 	      clock_t endd = clock();
-	      times[exp + i] = ((double)(endd - startt))/CLOCKS_PER_SEC;
-	      errs[exp + i] = test_w(weights, testX, testY, num_feat, num_samp);
-	      if (errs[exp + i] == 0)
+	      times[s_exp + i] = ((double)(endd - startt))/CLOCKS_PER_SEC;
+	      errs[s_exp + i] = test_w(weights, testX, testY, num_feat, num_samp);
+	      if (errs[s_exp + i] <= 0)
 		{
-		  printf("Error was 0, printing weights\n");
+		  printf("Error was less than 0, printing weights\n");
 		  int ww;
 		  for (ww = 0; ww < 10; ww++)
 		    printf("Weight %d = %lf\n", ww, weights[ww]);
