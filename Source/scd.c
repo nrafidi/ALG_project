@@ -16,6 +16,7 @@ double compare_and_swap(double* reg, double oldval, double newval)
 double update_w(double w, double x[], int y[], double lamb, int num_samples, int p_samp, double eta)
 {
 
+  double new_w;
   double sum = 0;
   int s;
   # pragma omp parallel for if(p_samp)
@@ -24,14 +25,21 @@ double update_w(double w, double x[], int y[], double lamb, int num_samples, int
       double val = exp(y[s]*w*x[s]);
       double oldsum = sum;
       // printf("About to compare_and_swap\n");
-      //printf("oldsum is %lf\n",oldsum);
+      // printf("oldsum is %lf\n",oldsum);
       if (isnan(sum))
-	break;
-      while (compare_and_swap(&sum, oldsum, sum + (y[s]*x[s]*val)/(1 + val)) != oldsum) {}
+	{
+	  // printf("NaN!\n");
+	  break;	  
+	}
+      double newsum = sum + (y[s]*x[s]*val)/(1 + val);
+      //      printf("val = %lf\ny[s] = %d\n x[s] = %lf\n s = %d\n",val, y[s], x[s], s);
+      while (compare_and_swap(&sum, oldsum, newsum) != oldsum) {}
+      //printf("sum is %lf\n", sum);
       //  printf("Swap over\n");
     }
-  //printf("Weight update = %lf", eta*sum + eta*lamb*w);
-  return w + eta*sum + eta*lamb*w;
+  new_w = w + eta*sum + eta*lamb*w;
+  //  printf("Weight update = %lf\nsum = %lf\nsamples = %d\n", new_w, sum, num_samples);
+  return new_w;
 }
 
 
@@ -64,7 +72,8 @@ void runSCD(int batch, double weights[], double* x, int y[], int lamb, int num_s
       # pragma omp parallel for if(p_batch)
       for (j = 0; j < batch; j++)
 	{
-	  int r = rand()%num_feats;	  
+	  int r = rand()%num_feats;
+	  //printf("r = %d\n", r);
 	  // printf("About to update_w\n");
 	  weights[r] = update_w(weights[r], &batchX[r*s_batch], batchY, lamb, s_batch, p_w_samp, eta);
 	}

@@ -38,16 +38,15 @@ double test_w(double* w, double* x, int* y, int num_feat, int num_samp)
   return (double) num_wrong / num_samp; 
 }
 
-double choose_lambda (int fold_size, double* x, int* y, int num_samp, int num_feat, int batch, int s_batch,  int it, double eta)
+double choose_lambda (int fold, double* x, int* y, int num_samp, int num_feat, int batch, int s_batch,  int it, double eta)
 {
   int i,j,k,m;
   double lambdas[] = {0, .001, .01, .1, 1, 10, 100, 1000};//, 10000, 100000};
   int len = sizeof(lambdas)/sizeof(double);
   double weights[num_feat];
-  int fold = num_samp / fold_size;
+  int fold_size = num_samp / fold;
   double errs[len];
   int inan[len];
-
 
 # pragma omp parallel for
   for (i = 0; i < len; i++)
@@ -122,13 +121,13 @@ int main(void)
   int i, j, k;
 
   //Training Set
-  char *xFile = "/usr0/home/nrafidi/Data/arc_tr.csv";
-  char *yFile = "/usr0/home/nrafidi/Data/arc_labels_tr.csv";
-  char *xTestFile = "/usr2/home/kearly/arc_ts.csv";
-  char *yTestFile = "/usr2/home/kearly/arc_labels_ts.csv";
+  char *xFile = "/usr0/home/nrafidi/Data/ij_tr.csv";
+  char *yFile = "/usr0/home/nrafidi/Data/ij_labels_tr.csv";
+  char *xTestFile = "/usr0/home/nrafidi/Data/ij_ts.csv"; //"/usr2/home/kearly/arc_ts.csv";
+    char *yTestFile = "/usr0/home/nrafidi/Data/ij_labels_ts.csv"; //"/usr2/home/kearly/arc_labels_ts.csv";
 
-  int num_samp = 100;
-  int num_feat = 10000;
+  int num_samp = 24995;
+  int num_feat = 22;
 
   double *x = malloc(num_samp*num_feat*sizeof(double));
   double *testX = malloc(num_samp*num_feat*sizeof(double));
@@ -152,17 +151,18 @@ int main(void)
 
   //Feature batch values
 //  int batch_max = num_feat;
-  int batch_max = 5000; // set to num_feat
-  int batch_min = 5000; // set to 0
-  int batch_step = 1000;
+  int batch_max = num_feat; // set to num_feat
+  int batch_min = 0; // set to 0
+  int batch_step = 2;
   //Sample batch values
-  int s_batch_max = 90;
-  int s_batch_min = 70; // set to 0
-  int s_batch_step = 10;
+  int s_batch_max = num_samp;
+  int s_batch_min = 0; // set to 0
+  int s_batch_step = 2400;
   //Iterations, step size and fold size for cross-validation
   int it = 100;
-  double eta = 0.0001;
-  int fold_size = 10;
+  double eta = 0.001;
+  int num_folds = 10;
+  //  int fold_size = ;
   //Number of experiments
   int numexp = batch_max/batch_step + s_batch_max/s_batch_step;
   
@@ -185,11 +185,11 @@ int main(void)
 	 
 	  //choose lambda
 	  clock_t start = clock();
-	  lambs[s_exp] = choose_lambda (fold_size, x, y, num_samp, num_feat, batch, s_batch, it, eta);
+	  lambs[s_exp] = choose_lambda (num_folds, x, y, num_samp, num_feat, batch, s_batch, it, eta);
 	  clock_t end = clock();
 	  timel[s_exp] = ((double) (end - start))/CLOCKS_PER_SEC;
 	  //printf("%lf, ", ((double) (end - start))/CLOCKS_PER_SEC);
-//	  printf("Chosen lambda = %f\n",lambs[exp]); //if this prints -1 we're having problems
+	  // printf("Chosen lambda = %f\n",lambs[exp]); //if this prints -1 we're having problems
 # pragma omp parallel for
 	  for (i = 0; i < 4; i++)
 	    {
@@ -203,13 +203,16 @@ int main(void)
 	      clock_t endd = clock();
 	      times[s_exp + i] = ((double)(endd - startt))/CLOCKS_PER_SEC;
 	      errs[s_exp + i] = test_w(weights, testX, testY, num_feat, num_samp);
-	      if (errs[s_exp + i] <= 0)
-		{
-		  printf("Error was less than 0, printing weights\n");
+//	      if (errs[s_exp + i] <= 0)
+//		{
+	      /* printf("printing weights\n");
 		  int ww;
-		  for (ww = 0; ww < 10; ww++)
-		    printf("Weight %d = %lf\n", ww, weights[ww]);
-		}
+		  for (ww = 0; ww < num_feat; ww++)
+                    {
+                      if (weights[ww] != 0)
+		        printf("Weight %d = %lf\n", ww, weights[ww]);
+			}*/
+//		}
 	    }
 	}
     }

@@ -1,0 +1,91 @@
+printing weights
+Weight 0 = -0.000472
+Weight 1 = 0.000000
+Weight 2 = 0.000000
+Weight 3 = 0.000000
+Weight 4 = 0.000000
+Weight 5 = 0.000000
+Weight 6 = 0.000000
+Weight 7 = 0.000000
+Weight 8 = 0.000000
+Weight 9 = 0.000000
+printing weights
+Weight 0 = 0.000023
+Weight 1 = 0.000000
+Weight 2 = 0.000000
+Weight 3 = 0.000000
+Weight 4 = 0.000000
+Weight 5 = 0.000000
+Weight 6 = 0.000000
+Weight 7 = 0.000000
+Weight 8 = 0.000000
+Weight 9 = 0.000000
+printing weights
+Weight 0 = -0.000161
+Weight 1 = 0.000000
+Weight 2 = 0.000000
+Weight 3 = 0.000000
+Weight 4 = 0.000000
+Weight 5 = 0.000000
+Weight 6 = 0.000000
+Weight 7 = 0.000000
+Weight 8 = 0.000000
+Weight 9 = 0.000000
+printing weights
+Weight 0 = -0.000301
+Weight 1 = 0.000000
+Weight 2 = 0.000000
+Weight 3 = 0.000000
+Weight 4 = 0.000000
+Weight 5 = 0.000000
+Weight 6 = 0.000000
+Weight 7 = 0.000000
+Weight 8 = 0.000000
+Weight 9 = 0.000000
+printing weights
+Weight 0 = -0.001314
+Weight 1 = 0.000000
+Weight 2 = 0.000000
+Weight 3 = 0.000000
+Weight 4 = 0.000000
+Weight 5 = 0.000000
+Weight 6 = 0.000000
+Weight 7 = 0.000000
+Weight 8 = 0.000000
+Weight 9 = 0.000000
+printing weights
+Weight 0 = -0.001570
+Weight 1 = 0.000000
+Weight 2 = 0.000000
+Weight 3 = 0.000000
+Weight 4 = 0.000000
+Weight 5 = 0.000000
+Weight 6 = 0.000000
+Weight 7 = 0.000000
+Weight 8 = 0.000000
+Weight 9 = 0.000000
+printing weights
+Weight 0 = -0.000906
+Weight 1 = 0.000000
+Weight 2 = 0.000000
+Weight 3 = 0.000000
+Weight 4 = 0.000000
+Weight 5 = 0.000000
+Weight 6 = 0.000000
+Weight 7 = 0.000000
+Weight 8 = 0.000000
+Weight 9 = 0.000000
+printing weights
+Weight 0 = -0.001109
+Weight 1 = 0.000000
+Weight 2 = 0.000000
+Weight 3 = 0.000000
+Weight 4 = 0.000000
+Weight 5 = 0.000000
+Weight 6 = 0.000000
+Weight 7 = 0.000000
+Weight 8 = 0.000000
+Weight 9 = 0.000000
+Batch, S_batch, TimeL, L, T1, E1, T2, E2, T3, E3, T4, E4,
+5000, 70, 272.380000, 100.000000, 2.200000, 0.440000, 2.490000, 0.440000, 2.490000, 0.440000, 2.500000, 0.440000, 
+5000, 80, 307.460000, 1.000000, 2.490000, 0.440000, 2.490000, 0.440000, 2.500000, 0.440000, 2.500000, 0.440000, 

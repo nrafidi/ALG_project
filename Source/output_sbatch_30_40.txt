@@ -1,0 +1,19 @@
+printing weights
+Weight 0 = -0.030534
+printing weights
+Weight 0 = -0.022411
+printing weights
+Weight 0 = -0.002811
+printing weights
+Weight 0 = -0.009274
+printing weights
+Weight 0 = -0.000219
+printing weights
+Weight 0 = -0.000304
+printing weights
+Weight 0 = -0.000800
+printing weights
+Weight 0 = -0.000744
+Batch, S_batch, TimeL, L, T1, E1, T2, E2, T3, E3, T4, E4,
+5000, 30, 119.480000, 1000.000000, 1.340000, 0.440000, 1.190000, 0.440000, 1.180000, 0.440000, 1.180000, 0.440000, 
+5000, 40, 119.860000, 100.000000, 1.190000, 0.440000, 1.180000, 0.440000, 1.180000, 0.440000, 1.190000, 0.440000, 
