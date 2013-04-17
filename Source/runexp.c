@@ -160,7 +160,7 @@ int main(void)
   int s_batch_step = 2400;
   //Iterations, step size and fold size for cross-validation
   int it = 100;
-  double eta = 0.001;
+  double eta = 0.0001;
   int num_folds = 10;
   //  int fold_size = ;
   //Number of experiments
