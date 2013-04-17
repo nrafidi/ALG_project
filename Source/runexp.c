@@ -199,7 +199,14 @@ int main(void)
 		  printf("Weights are nan - discard trial %d,%d,%d,\n", batch, s_batch, i);
 	      clock_t endd = clock();
 	      times[exp + i] = ((double)(endd - startt))/CLOCKS_PER_SEC;
-	      errs[exp + i] = test_w(weights, testX, testY, num_feat, num_samp);	      
+	      errs[exp + i] = test_w(weights, testX, testY, num_feat, num_samp);
+	      if (errs[exp + i] == 0)
+		{
+		  printf("Error was 0, printing weights\n");
+		  int ww;
+		  for (ww = 0; ww < 10; ww++)
+		    printf("Weight %d = %lf\n", ww, weights[ww]);
+		}
 	    }
 	}
     }
