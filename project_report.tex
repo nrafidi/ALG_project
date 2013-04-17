@@ -1,5 +1,6 @@
 \documentclass{article}
 \usepackage{geometry}
+\usepackage{algorithmic}
 %\usepackage{fancyhdr}
 \usepackage{amsmath,amsthm,amssymb}
 \usepackage{graphicx}
@@ -27,7 +28,7 @@ where $x \in \mathbb{R}^F$ is a vector of sample features, $y \in \lbrace -1, 1 
 
 The optimum value for this objective function has no closed-form solution, and so we use gradient descent to find the minimum value. Letting $x \in \mathbb{R}^{N \times F}$ be the matrix of $N$ samples with $F$ features each, the update equation for a particular feature weight $w_f$ is
 \begin{equation}
-w_f = w_f + \eta \left( \sum_{i = 1}^{N}(y_i - g(\vec{w}, x_i)) + \lambda w_f \right)
+w_f = w_f + \eta \left( \sum_{i = 1}^{N}(y_i - g(\vec{w}, x_i)) + \lambda w_f \right) %Shouldn't we define this for w_f specifically? 
 \end{equation}
 \begin{equation}
 g(\vec{w}, x_i) = \frac{-w^Tx_ie^{-w^Tx_i}}{1 + e^{-w^Tx_i}}
@@ -47,8 +48,35 @@ In this project we implemented stochastic gradient descent for $L_2$ penalized l
 \hline
 Algorithm 1
 \hline
-
-Algorithm 1 is the generic gradient descent (TODO:make algo fig). If the number of features is large, it can be very time consuming to update all features on each iteration of the algorithm, especially if it is likely that not all features are informative.  Thus, in stochastic gradient descent, a feature (or a set of features) is randomly chosen and its weight updated on each iteration using all or a subset of the training samples. This is shown in Algorithm 2 (TODO: make fig).
+\begin{algorithmic}
+\STATE{$w \leftarrow 0$}
+\WHILE{!converged}
+\FOR{$i = 0$ \TO $F-1$}
+\FOR{$j = 0$ \TO $N-1$}
+\STATE{$w[i] \leftarrow w[i] + \eta(y[j] - g(w[i], x[i, j]))$}
+\ENDFOR
+\STATE{$w[i] \leftarrow w[i] + \eta\lambda w[i]$}
+\ENDFOR
+\ENDWHILE
+\end{algorithmic}
+\hline
+Algorithm 1 is the generic gradient descent. If the number of features is large, it can be very time consuming to update all features on each iteration of the algorithm, especially if it is likely that not all features are informative.  Thus, in stochastic gradient descent, a feature (or a set of features) is randomly chosen and its weight updated on each iteration using all or a subset of the training samples. This is shown in Algorithm 2.
+\hline
+\hline
+Algorithm 2
+\hline
+\STATE{$w \leftarrow 0$}
+\FOR{$t = 0$ \TO $num_iterations$}
+\FOR{$i = 0$ \TO $batch_F$}
+\STATE{choose $f$ randomly from $F$}
+\FOR{$j = 0$ \TO $batch_N$}
+\STATE{choose $n$ randomly from $N$}
+\STATE{$w[f] \leftarrow w[f] + \eta(y[n] - g(w[f], x[f, n]))$}
+\ENDFOR
+\STATE{$w[f] \leftarrow w[f] + \eta\lambda w[f]$}
+\ENDFOR
+\ENDFOR
+\hline
 \subsection{Parallelized Versions}
 There are several ways in which Algorithm 2 can be parallelized. In this project we explore two ways of parallelizing: batch updates, and a parallelization of those batch updates.  In each iteration, rather than updating the weight corresponding to one feature, which will require a large number of iterations to converge, we can update a subset of the weights (a batch).  If the probability that the same weight will appear more than once in a batch is low, then all the weights in the batch can be updated in parallel safely. We can also vary how many samples are used in each update.  Using too few will greatly increase the number of iterations needed to converge, but using all samples may not be necessary, either.  Updating a weight is simply adding an independent value to it.  Thus, we can parallelize the weight update across samples with minimal conflict in the result.
 
@@ -64,7 +92,7 @@ Parallelization across samples; updating a weight with the samples in a batch in
 Parallelization of both loops
 \end{enumerate}
 \subsection{Experiments}
-Our goal was to see how the benefits gained by each level of parallelization change as the batch sizes are increased.  To that end, we ran Algorithm 2 at each level of parallelization, for varying batch sizes and compared the performance on a validation set as well as the runtime. The number of iterations and the step size were fixed throughout, and the regularization constant $\lambda$ was chosen with cross-validation of the training set for each feature and sample batch size pair.
+Our goal was to see how the benefits gained by each level of parallelization change as the batch sizes are increased.  To that end, we ran Algorithm 2 at each level of parallelization, for varying batch sizes and compared the performance on a validation set as well as the runtime. The number of iterations and the step size were fixed throughout, and the regularization constant $\lambda$ was chosen with cross-validation of the training set for each feature and sample batch size pair. The only operation that was made atomic was the update over samples within an update of a particular weight (e.g. the innermost loop of Algorithm 2).
 \subsubsection{Data Sets}
 We used the arccene data set from among those used by \cite{shotgun2011}.
 
