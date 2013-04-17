@@ -151,10 +151,13 @@ int main(void)
   */
 
   //Feature batch values
-  int batch_max = num_feat;
+//  int batch_max = num_feat;
+  int batch_max = 5000; // set to num_feat
+  int batch_min = 5000; // set to 0
   int batch_step = 1000;
   //Sample batch values
   int s_batch_max = num_samp;
+  int s_batch_min = 70; // set to 0
   int s_batch_step = 10;
   //Iterations, step size and fold size for cross-validation
   int it = 100;
@@ -168,13 +171,13 @@ int main(void)
   int b, s_b;
 
 # pragma omp parallel for
-  for (b = 5000; b <=batch_max; b +=batch_step)
+  for (b = batch_min; b <=batch_max; b +=batch_step)
     {
       int exp =  b/batch_step;
       int batch = b != 0 ? b : 1;
 //      printf("Feature batch size batch = %d\n", batch);
 # pragma omp parallel for
-      for (s_b = 70; s_b <= s_batch_max; s_b+=s_batch_step)
+      for (s_b = s_batch_min; s_b <= s_batch_max; s_b+=s_batch_step)
 	{
 	  int s_exp = exp + s_b/s_batch_step;
 	  int s_batch = s_b != 0 ? s_b : 1;
@@ -209,11 +212,11 @@ int main(void)
   //first line
   printf("Batch, S_batch, TimeL, L, T1, E1, T2, E2, T3, E3, T4, E4,\n");
   //Rest of data
-  for (b = 0; b <= batch_max; b+= batch_step)
+  for (b = batch_min; b <= batch_max; b+= batch_step)
     {
       int exp =  b/batch_step;
       int batch = b != 0 ? b : 1;
-      for (s_b = 0; s_b <= s_batch_max; s_b+=s_batch_step)
+      for (s_b = s_batch_min; s_b <= s_batch_max; s_b+=s_batch_step)
 	{
 	  int s_exp = exp + s_b/s_batch_step;
 	  int s_batch = s_b != 0 ? s_b : 1;
