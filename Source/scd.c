@@ -30,6 +30,7 @@ double update_w(double w, double x[], int y[], double lamb, int num_samples, int
       while (compare_and_swap(&sum, oldsum, sum + (y[s]*x[s]*val)/(1 + val)) != oldsum) {}
       //  printf("Swap over\n");
     }
+  //printf("Weight update = %lf", eta*sum + eta*lamb*w);
   return w + eta*sum + eta*lamb*w;
 }
 

@@ -168,13 +168,13 @@ int main(void)
   int b, s_b;
 
 # pragma omp parallel for
-  for (b = 0; b <=batch_max; b +=batch_step)
+  for (b = 5000; b <=batch_max; b +=batch_step)
     {
       int exp =  b/batch_step;
       int batch = b != 0 ? b : 1;
 //      printf("Feature batch size batch = %d\n", batch);
 # pragma omp parallel for
-      for (s_b = 0; s_b <= s_batch_max; s_b+=s_batch_step)
+      for (s_b = 70; s_b <= s_batch_max; s_b+=s_batch_step)
 	{
 	  int s_exp = exp + s_b/s_batch_step;
 	  int s_batch = s_b != 0 ? s_b : 1;
@@ -194,7 +194,7 @@ int main(void)
 	      int second = i%2;
 	      double weights[num_feat];
 	      clock_t startt = clock();
-	      runSCD(batch, weights, x, y, lambs[exp], num_samp, num_feat, s_batch, first, second, it, eta);
+	      runSCD(batch, weights, x, y, lambs[s_exp], num_samp, num_feat, s_batch, first, second, it, eta);
 	      if (check_nan(weights))
 		  printf("Weights are nan - discard trial %d,%d,%d,\n", batch, s_batch, i);
 	      clock_t endd = clock();
