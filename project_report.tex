@@ -44,39 +44,47 @@ Several recent studies have also looked at parallelizing stochastic gradient des
 \section{Algorithms and Optimizations}
 \subsection{Stochastic Gradient Descent}
 In this project we implemented stochastic gradient descent for $L_2$ penalized logistic regression. The mathematical basis of this algorithm was explained in the Inroduction. Here we give pseudocode of the algorithms involved.
+\\
+\\
+\begin{tabular} {l}
 \hline
 \hline
-Algorithm 1
+Algorithm 1 \\
 \hline
+\end{tabular}
 \begin{algorithmic}
-\STATE{$w \leftarrow 0$}
-\WHILE{!converged}
-\FOR{$i = 0$ \TO $F-1$}
-\FOR{$j = 0$ \TO $N-1$}
-\STATE{$w[i] \leftarrow w[i] + \eta(y[j] - g(w[i], x[i, j]))$}
-\ENDFOR
-\STATE{$w[i] \leftarrow w[i] + \eta\lambda w[i]$}
-\ENDFOR
-\ENDWHILE
+\STATE $w \leftarrow 0$ 
+\WHILE{!converged} 
+\FOR{$i = 0$ \TO $F-1$} 
+\FOR{$j = 0$ \TO $N-1$} 
+\STATE $w[i] \leftarrow w[i] + \eta(y[j] - g(w[i], x[i, j]))$ 
+\ENDFOR 
+\STATE $w[i] \leftarrow w[i] + \eta\lambda w[i]$ 
+\ENDFOR 
+\ENDWHILE 
 \end{algorithmic}
-\hline
 Algorithm 1 is the generic gradient descent. If the number of features is large, it can be very time consuming to update all features on each iteration of the algorithm, especially if it is likely that not all features are informative.  Thus, in stochastic gradient descent, a feature (or a set of features) is randomly chosen and its weight updated on each iteration using all or a subset of the training samples. This is shown in Algorithm 2.
+\\
+\\
+\begin{tabular}{l}
 \hline
 \hline
-Algorithm 2
+Algorithm 2 \\
 \hline
-\STATE{$w \leftarrow 0$}
+\end{tabular}
+\begin{algorithmic}
+\STATE $w \leftarrow 0$
 \FOR{$t = 0$ \TO $num_iterations$}
 \FOR{$i = 0$ \TO $batch_F$}
-\STATE{choose $f$ randomly from $F$}
+\STATE choose $f$ randomly from $F$
 \FOR{$j = 0$ \TO $batch_N$}
-\STATE{choose $n$ randomly from $N$}
-\STATE{$w[f] \leftarrow w[f] + \eta(y[n] - g(w[f], x[f, n]))$}
+\STATE choose $n$ randomly from $N$
+\STATE $w[f] \leftarrow w[f] + \eta(y[n] - g(w[f], x[f, n]))$
 \ENDFOR
-\STATE{$w[f] \leftarrow w[f] + \eta\lambda w[f]$}
+\STATE $w[f] \leftarrow w[f] + \eta\lambda w[f]$
 \ENDFOR
 \ENDFOR
-\hline
+\end{algorithmic}
 \subsection{Parallelized Versions}
 There are several ways in which Algorithm 2 can be parallelized. In this project we explore two ways of parallelizing: batch updates, and a parallelization of those batch updates.  In each iteration, rather than updating the weight corresponding to one feature, which will require a large number of iterations to converge, we can update a subset of the weights (a batch).  If the probability that the same weight will appear more than once in a batch is low, then all the weights in the batch can be updated in parallel safely. We can also vary how many samples are used in each update.  Using too few will greatly increase the number of iterations needed to converge, but using all samples may not be necessary, either.  Updating a weight is simply adding an independent value to it.  Thus, we can parallelize the weight update across samples with minimal conflict in the result.
 
