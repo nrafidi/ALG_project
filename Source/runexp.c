@@ -121,23 +121,32 @@ int main(void)
   int i, j, k;
 
   //Training Set
+//  char *xFile = "/usr2/home/kearly/rcv_tr.csv"; 
   char *xFile = "/usr0/home/nrafidi/Data/ij_tr.csv";
-  char *yFile = "/usr0/home/nrafidi/Data/ij_labels_tr.csv";
-  char *xTestFile = "/usr0/home/nrafidi/Data/ij_ts.csv"; //"/usr2/home/kearly/arc_ts.csv";
-    char *yTestFile = "/usr0/home/nrafidi/Data/ij_labels_ts.csv"; //"/usr2/home/kearly/arc_labels_ts.csv";
+//  char *yFile = "/usr2/home/kearly/rcv_labels_tr.csv";
+  char* yFile = "/usr0/home/nrafidi/Data/ij_labels_tr.csv";
+//  char *xTestFile = "/usr2/home/kearly/rcv_ts_short.csv"; 
+  char* xTestFile = "/usr0/home/nrafidi/Data/ij_ts.csv"; //"/usr2/home/kearly/arc_ts.csv";
+//  char *yTestFile = "/usr2/home/kearly/rcv_labels_ts_short.csv"; 
+  char *yTestFile = "/usr0/home/nrafidi/Data/ij_labels_ts.csv"; //"/usr2/home/kearly/arc_labels_ts.csv";
 
-  int num_samp = 24995;
-  int num_feat = 22;
+  int num_samp = 24995; // for ij dataset
+  int num_samp_ts = num_samp; // for ij dataset
+  int num_feat = 22; // for ij dataset
+
+//  int num_samp = 20242; // for rcv dataset 
+//  int num_samp_ts = 1000; // for rcv dataset
+//  int num_feat = 47236; // for rcv dataset
 
   double *x = malloc(num_samp*num_feat*sizeof(double));
-  double *testX = malloc(num_samp*num_feat*sizeof(double));
+  double *testX = malloc(num_samp_ts*num_feat*sizeof(double));
   readX(x, xFile);
   readX(testX, xTestFile);
   int *y = malloc(num_samp*sizeof(int));
   readY(y, yFile);
-  int *testY = malloc(num_samp*sizeof(int));
+  int *testY = malloc(num_samp_ts*sizeof(int));
   readY(testY, yTestFile);
-  // Print data after reading it in
+// Print data after reading it in
   /*
     for (i = 0; i < num_samp; i++)
     printf("Y[%d] = %d\n",i,y[i]);
@@ -160,7 +169,7 @@ int main(void)
   int s_batch_step = 2400;
   //Iterations, step size and fold size for cross-validation
   int it = 100;
-  double eta = 0.0001;
+  double eta = 0.00001;
   int num_folds = 10;
   //  int fold_size = ;
   //Number of experiments
@@ -202,7 +211,7 @@ int main(void)
 		  printf("Weights are nan - discard trial %d,%d,%d,\n", batch, s_batch, i);
 	      clock_t endd = clock();
 	      times[s_exp + i] = ((double)(endd - startt))/CLOCKS_PER_SEC;
-	      errs[s_exp + i] = test_w(weights, testX, testY, num_feat, num_samp);
+	      errs[s_exp + i] = test_w(weights, testX, testY, num_feat, num_samp_ts);
 //	      if (errs[s_exp + i] <= 0)
 //		{
 	      /* printf("printing weights\n");
