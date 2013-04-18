@@ -123,16 +123,16 @@ int main(void)
   //Training Set
 //  char *xFile = "/usr2/home/kearly/rcv_tr.csv"; 
   char *xFile = "/usr0/home/nrafidi/Data/ij_tr.csv";
-//  char *yFile = "/usr2/home/kearly/rcv_labels_tr.csv";
-  char* yFile = "/usr0/home/nrafidi/Data/ij_labels_tr.csv";
-//  char *xTestFile = "/usr2/home/kearly/rcv_ts_short.csv"; 
-  char* xTestFile = "/usr0/home/nrafidi/Data/ij_ts.csv"; //"/usr2/home/kearly/arc_ts.csv";
-//  char *yTestFile = "/usr2/home/kearly/rcv_labels_ts_short.csv"; 
-  char *yTestFile = "/usr0/home/nrafidi/Data/ij_labels_ts.csv"; //"/usr2/home/kearly/arc_labels_ts.csv";
+  char *yFile = "/usr2/home/kearly/rcv_labels_tr.csv";
+  //  char* yFile = "/usr0/home/nrafidi/Data/ij_labels_tr.csv";
+  char *xTestFile = "/usr2/home/kearly/rcv_ts_short.csv"; 
+  //  char* xTestFile = "/usr0/home/nrafidi/Data/ij_ts.csv"; //"/usr2/home/kearly/arc_ts.csv";
+  char *yTestFile = "/usr2/home/kearly/rcv_labels_ts_short.csv"; 
+  //  char *yTestFile = "/usr0/home/nrafidi/Data/ij_labels_ts.csv"; //"/usr2/home/kearly/arc_labels_ts.csv";
 
-  int num_samp = 24995; // for ij dataset
-  int num_samp_ts = num_samp; // for ij dataset
-  int num_feat = 22; // for ij dataset
+  int num_samp = 20242;//24995; // for ij dataset
+  int num_samp_ts = 1000;//num_samp; // for ij dataset
+  int num_feat = 47236;//22; // for ij dataset
 
 //  int num_samp = 20242; // for rcv dataset 
 //  int num_samp_ts = 1000; // for rcv dataset
@@ -162,11 +162,11 @@ int main(void)
 //  int batch_max = num_feat;
   int batch_max = num_feat; // set to num_feat
   int batch_min = 0; // set to 0
-  int batch_step = 2;
+  int batch_step = 4700;//2;
   //Sample batch values
   int s_batch_max = num_samp;
   int s_batch_min = 0; // set to 0
-  int s_batch_step = 2400;
+  int s_batch_step = 2000;
   //Iterations, step size and fold size for cross-validation
   int it = 100;
   double eta = 0.00001;
