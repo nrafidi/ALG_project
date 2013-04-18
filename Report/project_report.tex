@@ -103,10 +103,12 @@ Parallelization of both loops
 Our goal was to see how the benefits gained by each level of parallelization change as the batch sizes are increased.  To that end, we ran Algorithm 2 at each level of parallelization, for varying batch sizes and compared the performance on a validation set as well as the runtime. The number of iterations and the step size were fixed throughout, and the regularization constant $\lambda$ was chosen with cross-validation of the training set for each feature and sample batch size pair. The only operation that was made atomic was the update over samples within an update of a particular weight (e.g. the innermost loop of Algorithm 2).
 \subsubsection{Data Sets}
 We used the ijcnn1 data set from among those used by \cite{shotgun2011}. The data consisted of 22 features and 45000  samples, which we divided in half for a training and a validation set.
+\subsubsection{Code Structure}
+Our main file, which runs the experiments, is runexp.c.  It calls functions from data_proc.c and scd.c. All files and their corresponding header files are included at the end of the report.
 
 \section{Results}
 \subsection{Runtime Analysis}
-As Figures~\ref{fig:time_samp} and \ref{fig:time_feat} show, increasing the level of parallelization in stochastic gradient descent can improve the runtime up to a certain extent. With no parallelization, the runtime increases roughly linearly as batch sizes increase. However, once updates across samples or features are made parallel, the runtime reaches a plateau and remains constant. Parallelizing over features reaches this plateau sooner than parallelizing over samples alone; making both feature and sample batch updates in parallel results in the most speedup.
+As Figures~\ref{fig:time_samp} and \ref{fig:time_feat} show, increasing the level of parallelization in stochastic gradient descent can improve the runtime up to a certain extent. With no parallelization, the runtime increases roughly linearly as batch sizes increase, in both dimensions. However, once updates across samples or features are made parallel, the runtime reaches a plateau and remains constant. Parallelizing over features reaches this plateau sooner than parallelizing over samples alone; making both feature and sample batch updates in parallel results in the most speedup.  There is of course an increased startup cost to parlallelization which can be attributed to scheduling. However, as the numbers of features and samples increase, it pays off to parallelize.
 \begin{figure}
 \centering
 \includegraphics[width = .4\linewidth]{samptimeplot5}
@@ -126,6 +128,7 @@ As Figures~\ref{fig:time_samp} and \ref{fig:time_feat} show, increasing the leve
 \label{fig:time_feat}
 \end{figure}
 \subsection{Validation Error Analysis}
+The effect of parallelization on the error rates is interesting. Parallelizing seems to improve performance for smaller batch sizes, but has a limited effect as batch size increases.  This can be seen when looking at the solid curves in Figures~\ref{fig:err_samp} and \ref{fig:err_feat}.  The largest improvement comes from parallelizing over features, but parallelizing over both loops is still somewhat better.  In general this result is comforting, since most of our updates to the weight vector were not atomic and race conditions were a serious risk, especially for so few total features.
 \begin{figure}
 \centering
 \includegraphics[width = .4\linewidth]{samperrplot6}
@@ -145,6 +148,7 @@ As Figures~\ref{fig:time_samp} and \ref{fig:time_feat} show, increasing the leve
 \label{fig:err_feat}
 \end{figure}
 \subsection{Direct Comparison of Parallelization Levels}
+To more directly compare the parallelization levels, we have plotted them on the same graphs for the four experimental scenarios in Figure~\ref{fig:parallel}, with lines of best fit. The runtime results (top) are easiest to interpret. It is clear from the intercepts that parallelizing has a startup cost, as previously mentioned. However, the slopes of the lines differ, which double parallelization having the smallest slope. Again, the largest advantage comes from parallelization over features. Examining the error rates is more confusing, due to the high variance in the results.  The error as a function of sample batch size appears much less affected by parallelism, but it seems to make a big difference as a function of feature batch size.
 \begin{figure}
 \centering
 \includegraphics[width = .4\linewidth]{time_samp}
@@ -152,6 +156,7 @@ As Figures~\ref{fig:time_samp} and \ref{fig:time_feat} show, increasing the leve
 \includegraphics[width = .4\linewidth]{err_samp}
 \includegraphics[width = .4\linewidth]{err_feat}
 \caption{Direct comparison of parallelization levels. The upper two plots are runtime, and the bottom two are error. Plots on the left vary sample batch sizes and keep feature batch sizes fixed; plots on the right vary feature batch sizes and keep sample batch sizes fixed.}
+\label{fig:parallel}
 \end{figure}
 % Explanation of what figures are what....
 % {Runtime, Error} vs. {Feature Batch Size, Sample Batch Size}
@@ -161,12 +166,14 @@ As Figures~\ref{fig:time_samp} and \ref{fig:time_feat} show, increasing the leve
 %	- Each plot for both parallelizations: over features and samples
 %	- (there are four plots here)
 
-Figures~\cite{fig:NAME1} through \cite{fig:NAMEn} plot the runtimes and errors as the batch sizes (both features and samples) increase, for various levels of parallelization. As the batch sizes\textemdash both feature batch size and sample batch size\textemdash increase, there is the expected tradeoff between the convergence rate and runtime: when more features or samples are used to update the weights on each iteration, the algorithm converges more quickly, at the expense of more data processing and a longer runtime.
+%Figures~\cite{fig:NAME1} through \cite{fig:NAMEn} plot the runtimes and errors as the batch sizes (both features and samples) increase, for various levels of parallelization. As the batch sizes\textemdash both feature batch size and sample batch size\textemdash increase, there is the expected tradeoff between the convergence rate and runtime: when more features or samples are used to update the weights on each iteration, the algorithm converges more quickly, at the expense of more data processing and a longer runtime.
 
-Of course, the fastest runtime and convergence, for given feature and sample batch sizes, occur when both levels of parallelization are employed. However, Figure~\cite{fig:NAME} indicates that performance improves more significantly when batch updates over features are parallelized than when batch updates over samples are parallelized. This result is likely due to the size of this data set: there are 100 times as many features as samples, so parallelizing over the more computationally-intensive portion of the data set would result in a bigger performance improvement.
+%Of course, the fastest runtime and convergence, for given feature and sample batch sizes, occur when both levels of parallelization are employed. However, Figure~\cite{fig:NAME} indicates that performance improves more significantly when batch updates over features are parallelized than when batch updates over samples are parallelized. This result is likely due to the size of this data set: there are 100 times as many features as samples, so parallelizing over the more computationally-intensive portion of the data set would result in a bigger performance improvement.
 
 \section{Conclusions}
-The results demonstrate that while stochastic gradient descent involves many sequential passes through the data, parallelizing it leads to significant runtime improvements without adversely affecting the error convergence properties.  As the number of samples and/or features increases, it becomes more beneficial to parallelize across both dimensions.  In the case where the number of features greatly exceeds the number of samples, the major benefit arises from parallelizing across features, because it allows multiple features to be updated during an iteration without significant runtime cost.Previous work demonstrated parallelizing either across samples or across features, but we have shown that parallelization is not only possible across both dimensions, but highly useful.
+The results demonstrate that while stochastic gradient descent involves many sequential passes through the data, parallelizing it leads to definite runtime improvements without adversely affecting the error convergence properties, in some cases improving the error rate.  As the number of samples and/or features increases, it becomes more beneficial to parallelize across both dimensions.  Even in the case where the number of samples greatly exceeds the number of features, the major benefit arises from parallelizing across features, because it allows multiple features to be updated during an iteration without significant runtime cost.Previous work demonstrated parallelizing either across samples or across features, but we have shown that parallelization is not only possible across both dimensions, but highly useful.
+
+There are some limitations to this project that arose out of time and computing constraints. Firstly, in any experiment involving randomization, it is essential to perform the experiment multiple times and to average the resulting values. This allows estimates to be made with more confidence. Unfortunately, we were unable to do this, and present therefore the results of a single experiment run.  We would also have liked to try the experiments on a data set where the number of features exceeded the number of samples, but we ran out of time.
 
 \bibliographystyle{ieeetr}
 \bibliography{refs}
