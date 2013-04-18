@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <float.h>
 
+//Check if any element of the array w is nan
 int check_nan(double w[])
 {
   int i;
@@ -18,6 +19,7 @@ int check_nan(double w[])
   return ret;
 }
 
+//Get a the error rate of a set of weights w on data x and y
 double test_w(double* w, double* x, int* y, int num_feat, int num_samp)
 {
   int i,j;
@@ -38,10 +40,11 @@ double test_w(double* w, double* x, int* y, int num_feat, int num_samp)
   return (double) num_wrong / num_samp; 
 }
 
+//Cross validation to choose the regularization penalty lambda
 double choose_lambda (int fold, double* x, int* y, int num_samp, int num_feat, int batch, int s_batch,  int it, double eta)
 {
   int i,j,k,m;
-  double lambdas[] = {0, .001, .01, .1, 1, 10, 100, 1000};//, 10000, 100000};
+  double lambdas[] = {0, .001, .01, .1, 1, 10, 100, 1000};
   int len = sizeof(lambdas)/sizeof(double);
   double weights[num_feat];
   int fold_size = num_samp / fold;
@@ -87,11 +90,7 @@ double choose_lambda (int fold, double* x, int* y, int num_samp, int num_feat, i
 		}
 	    }
 
-	  //clock_t cst = clock();
 	  runSCD(batch, w, trainX, trainY, lambdas[i], num_samp - fold_size, num_feat, s_batch, 1, 1, it, eta);
-	  //clock_t cend = clock();
-	  //printf("runSCD took %.2lf sec for lambda = %lf\n", ((double) (cend-cst)/CLOCKS_PER_SEC), lambdas[i]);
-	  //NOTE: Probably should make atomic, but this doesn't need to be precise so I guess it doesn't matter?
 	  test_err += test_w(w, &x[start], &y[start], num_feat, fold_size);
 	}
       errs[i] = (double) (test_err / fold);
@@ -159,23 +158,23 @@ int main(void)
   */
 
   //Feature batch values
-//  int batch_max = num_feat;
-  int batch_max = num_feat; // set to num_feat
-  int batch_min = 0; // set to 0
-  int batch_step = 4700;//2;
+  int batch_max = num_feat; 
+  int batch_min = 0; 
+  int batch_step = 4700;
   //Sample batch values
   int s_batch_max = num_samp;
-  int s_batch_min = 0; // set to 0
+  int s_batch_min = 0; 
   int s_batch_step = 2000;
-  //Iterations, step size and fold size for cross-validation
+
+  //Iterations, step size and Number of cross-validation folds
   int it = 100;
   double eta = 0.00001;
   int num_folds = 10;
-  //  int fold_size = ;
-  //Number of experiments
+
+  //Number of experiments: how many different batches will we run?
   int numexp = batch_max/batch_step + s_batch_max/s_batch_step;
   
-
+  //Time to choose lambda, lambda chosen, runtimes for 4 levels, and errors for 4 levels
   double timel[numexp], lambs[numexp], times[numexp*4], errs[numexp*4];
   int b, s_b;
 
@@ -184,21 +183,19 @@ int main(void)
     {
       int exp =  b/batch_step;
       int batch = b != 0 ? b : 1;
-//      printf("Feature batch size batch = %d\n", batch);
+
 # pragma omp parallel for
       for (s_b = s_batch_min; s_b <= s_batch_max; s_b+=s_batch_step)
 	{
 	  int s_exp = exp + s_b/s_batch_step;
 	  int s_batch = s_b != 0 ? s_b : 1;
-//          printf("Sample batch size s_batch = %d\n", s_batch);
-	 
+
 	  //choose lambda
 	  clock_t start = clock();
 	  lambs[s_exp] = choose_lambda (num_folds, x, y, num_samp, num_feat, batch, s_batch, it, eta);
 	  clock_t end = clock();
 	  timel[s_exp] = ((double) (end - start))/CLOCKS_PER_SEC;
-	  //printf("%lf, ", ((double) (end - start))/CLOCKS_PER_SEC);
-	  // printf("Chosen lambda = %f\n",lambs[exp]); //if this prints -1 we're having problems
+
 # pragma omp parallel for
 	  for (i = 0; i < 4; i++)
 	    {
@@ -207,21 +204,12 @@ int main(void)
 	      double weights[num_feat];
 	      clock_t startt = clock();
 	      runSCD(batch, weights, x, y, lambs[s_exp], num_samp, num_feat, s_batch, first, second, it, eta);
+	      //If the weights blew up to infinity, we can't use the results
 	      if (check_nan(weights))
 		  printf("Weights are nan - discard trial %d,%d,%d,\n", batch, s_batch, i);
 	      clock_t endd = clock();
 	      times[s_exp + i] = ((double)(endd - startt))/CLOCKS_PER_SEC;
 	      errs[s_exp + i] = test_w(weights, testX, testY, num_feat, num_samp_ts);
-//	      if (errs[s_exp + i] <= 0)
-//		{
-	      /* printf("printing weights\n");
-		  int ww;
-		  for (ww = 0; ww < num_feat; ww++)
-                    {
-                      if (weights[ww] != 0)
-		        printf("Weight %d = %lf\n", ww, weights[ww]);
-			}*/
-//		}
 	    }
 	}
     }

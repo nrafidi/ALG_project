@@ -106,6 +106,7 @@ We used the ijcnn1 data set from among those used by \cite{shotgun2011}. The dat
 
 \section{Results}
 \subsection{Runtime Analysis}
+As Figures~\ref{fig:time_samp} and \ref{fig:time_feat} show, increasing the level of parallelization in stochastic gradient descent can improve the runtime up to a certain extent. With no parallelization, the runtime increases roughly linearly as batch sizes increase. However, once updates across samples or features are made parallel, the runtime reaches a plateau and remains constant. Parallelizing over features reaches this plateau sooner than parallelizing over samples alone; making both feature and sample batch updates in parallel results in the most speedup.
 \begin{figure}
 \centering
 \includegraphics[width = .4\linewidth]{samptimeplot5}
@@ -113,6 +114,7 @@ We used the ijcnn1 data set from among those used by \cite{shotgun2011}. The dat
 \includegraphics[width = .4\linewidth]{samptimeplot9}
 \includegraphics[width = .4\linewidth]{samptimeplot11}
 \caption{Runtime versus sample batch size for various feature batch sizes. Upper left is no parallelization, Upper right is parallelization over samples. Bottom left is parallelization over features. Bottom right is parallelization over both.}
+\label{fig:time_samp}
 \end{figure}
 \begin{figure}
 \centering
@@ -120,16 +122,18 @@ We used the ijcnn1 data set from among those used by \cite{shotgun2011}. The dat
 \includegraphics[width = .4\linewidth]{feattimeplot7}
 \includegraphics[width = .4\linewidth]{feattimeplot9}
 \includegraphics[width = .4\linewidth]{feattimeplot11}
-\caption{Upper left is no parallelization, Upper right is parallelization over samples. Bottom left is parallelization over features. Bottom right is parallelization over both.}
+\caption{Runtime versus feature batch size for various sample batch sizes. Upper left is no parallelization, Upper right is parallelization over samples. Bottom left is parallelization over features. Bottom right is parallelization over both.}
+\label{fig:time_feat}
 \end{figure}
-\subsection{Validation Error Analysis'}
+\subsection{Validation Error Analysis}
 \begin{figure}
 \centering
 \includegraphics[width = .4\linewidth]{samperrplot6}
 \includegraphics[width = .4\linewidth]{samperrplot8}
 \includegraphics[width = .4\linewidth]{samperrplot10}
 \includegraphics[width = .4\linewidth]{samperrplot12}
-\caption{Upper left is no parallelization, Upper right is parallelization over samples. Bottom left is parallelization over features. Bottom right is parallelization over both.}
+\caption{Error versus sample batch size for various feature batch sizes. Upper left is no parallelization, Upper right is parallelization over samples. Bottom left is parallelization over features. Bottom right is parallelization over both.}
+\label{fig:err_samp}
 \end{figure}
 \begin{figure}
 \centering
@@ -137,7 +141,8 @@ We used the ijcnn1 data set from among those used by \cite{shotgun2011}. The dat
 \includegraphics[width = .4\linewidth]{featerrplot8}
 \includegraphics[width = .4\linewidth]{featerrplot10}
 \includegraphics[width = .4\linewidth]{featerrplot12}
-\caption{Upper left is no parallelization, Upper right is parallelization over samples. Bottom left is parallelization over features. Bottom right is parallelization over both.}
+\caption{Error versus feature batch size for various sample batch sizes. Upper left is no parallelization, Upper right is parallelization over samples. Bottom left is parallelization over features. Bottom right is parallelization over both.}
+\label{fig:err_feat}
 \end{figure}
 \subsection{Direct Comparison of Parallelization Levels}
 \begin{figure}
@@ -146,7 +151,7 @@ We used the ijcnn1 data set from among those used by \cite{shotgun2011}. The dat
 \includegraphics[width = .4\linewidth]{time_feat}
 \includegraphics[width = .4\linewidth]{err_samp}
 \includegraphics[width = .4\linewidth]{err_feat}
-\caption{}
+\caption{Direct comparison of parallelization levels. The upper two plots are runtime, and the bottom two are error. Plots on the left vary sample batch sizes and keep feature batch sizes fixed; plots on the right vary feature batch sizes and keep sample batch sizes fixed.}
 \end{figure}
 % Explanation of what figures are what....
 % {Runtime, Error} vs. {Feature Batch Size, Sample Batch Size}

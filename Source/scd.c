@@ -1,10 +1,9 @@
 #include <math.h>
 #include "scd.h"
 
+//Simple Compare and Swap for Atomic Updates
 double compare_and_swap(double* reg, double oldval, double newval)
-{
-  //printf("In CAS: oldval is %lf\n",oldval);
-  
+{  
   double old_reg_val = *reg;
   if (old_reg_val == oldval)
     *reg = newval;
@@ -12,7 +11,7 @@ double compare_and_swap(double* reg, double oldval, double newval)
 }
 
 
-//Updates a weight w given a set of features x, labels y and a lambda for regularization
+//Updates a single weight w and returns its new value
 double update_w(double w, double x[], int y[], double lamb, int num_samples, int p_samp, double eta)
 {
 
@@ -24,25 +23,19 @@ double update_w(double w, double x[], int y[], double lamb, int num_samples, int
     {
       double val = exp(y[s]*w*x[s]);
       double oldsum = sum;
-      // printf("About to compare_and_swap\n");
-      // printf("oldsum is %lf\n",oldsum);
       if (isnan(sum))
 	{
-	  // printf("NaN!\n");
 	  break;	  
 	}
       double newsum = sum + (y[s]*x[s]*val)/(1 + val);
-      //      printf("val = %lf\ny[s] = %d\n x[s] = %lf\n s = %d\n",val, y[s], x[s], s);
       while (compare_and_swap(&sum, oldsum, newsum) != oldsum) {}
-      //printf("sum is %lf\n", sum);
-      //  printf("Swap over\n");
     }
   new_w = w + eta*sum + eta*lamb*w;
-  //  printf("Weight update = %lf\nsum = %lf\nsamples = %d\n", new_w, sum, num_samples);
   return new_w;
 }
 
 
+//runs stochastic gradient descent and fills the double * weights
 void runSCD(int batch, double weights[], double* x, int y[], int lamb, int num_samples, int num_feats, int s_batch, int p_batch, int p_w_samp, int it, double eta)
 {
   int i, j, k;
@@ -67,19 +60,14 @@ void runSCD(int batch, double weights[], double* x, int y[], int lamb, int num_s
 	  batchY[j] = y[r];
 	}
       
-      //if (lamb >= 10000)
-	//printf("runSCD iteration %d\n", i);
       # pragma omp parallel for if(p_batch)
       for (j = 0; j < batch; j++)
 	{
 	  int r = rand()%num_feats;
-	  //printf("r = %d\n", r);
-	  // printf("About to update_w\n");
 	  weights[r] = update_w(weights[r], &batchX[r*s_batch], batchY, lamb, s_batch, p_w_samp, eta);
 	}
     }  
-  //if (lamb >=10000)
-    // printf("Leaving runSCD\n");
+
   free(batchX);
   free(batchY);
 }
